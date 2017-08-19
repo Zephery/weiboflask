@@ -12,8 +12,8 @@ def hello_world():
 
 @app.route("/hello/<word>")
 def hello_user(word):
-    temp =ada_real.test(word)
-    return str(temp)
+    temp = ada_real.test(word)
+    return word + "   " + str(temp)
 
 
 if __name__ == '__main__':
