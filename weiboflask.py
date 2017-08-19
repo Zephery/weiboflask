@@ -1,6 +1,6 @@
-from flask import Flask, request, jsonify, g, render_template, redirect, url_for, session, current_app
+from flask import Flask
+
 import multi_NB as ada_real
-import sys
 
 app = Flask(__name__)
 
@@ -17,5 +17,4 @@ def hello_user(word):
 
 
 if __name__ == '__main__':
-    print(sys.path)
     app.run()
