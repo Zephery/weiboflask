@@ -4,6 +4,7 @@
 
 import random
 import os
+import json
 import numpy as np
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.metrics import zero_one_loss
@@ -48,10 +49,33 @@ for i, y_pred in enumerate(ada_real.staged_predict(train_mood_array)):  # 训练
 def test(word):
     word_array = bayes.build_word_array(word)
     asfaiajioaf = bayes.setOfWordsListToVecTor(vocabList, word_array)
-    print(ada_real.predict(asfaiajioaf))
     return ada_real.predict(asfaiajioaf)[0]
+
+
+def testandscore(word):
+    word_array = bayes.build_word_array(word)
+    asfaiajioaf = bayes.setOfWordsListToVecTor(vocabList, word_array)
+    aa, bb = ada_real.predict(asfaiajioaf)[0], ada_real.predict_proba(asfaiajioaf)[0]
+    total = {}
+    total["type"] = int(aa)  # 需要转化一下int跟int32是不同的，int32不能序列化
+    temp = []
+    ggg = {}
+    ccc = {}
+    ddd = {}
+    ggg["key"] = "正向"
+    ggg["value"] = float('%.5f' % bb[0])
+    ccc["key"] = "负向"
+    ccc["value"] = float('%.5f' % bb[1])
+    ddd["key"] = "客观"
+    ddd["value"] = float('%.5f' % bb[2])
+    temp.append(ggg)
+    temp.append(ccc)
+    temp.append(ddd)
+    total["data"] = temp
+    return total
 
 
 if __name__ == '__main__':
     word = "高兴，开心，非常开心，愉快"
-    print(test(word))
+    tt = testandscore(word)
+    print(json.dumps(tt))
