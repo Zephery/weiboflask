@@ -1,16 +1,11 @@
 '''
 多类的朴素贝叶斯实现
 '''
-import random
-import re
-import traceback
 import os
+import re
+
 import jieba
-import matplotlib.pyplot as plt
 import numpy as np
-from pylab import mpl
-from sklearn.externals import joblib
-from sklearn.naive_bayes import MultinomialNB
 
 base_dir = os.path.dirname(__file__)
 stop = [line.strip() for line in open(os.path.join(base_dir,'stop.txt'), 'r', encoding='utf-8').readlines()]  # 停用词
@@ -93,130 +88,3 @@ def setOfWordsListToVecTor(vocabularyList, train_mood_array):  # 将所有微博
         vocabMarked = setOfWordsToVecTor(vocabularyList, train_mood_array[i])
         vocabMarkedList.append(vocabMarked)
     return vocabMarkedList
-
-
-def trainingNaiveBayes(train_mood_array, label):  # 计算先验概率
-    numTrainDoc = len(train_mood_array)
-    numWords = len(train_mood_array[0])
-    prior_Pos, prior_Neg, prior_Neutral = 0.0, 0.0, 0.0
-    for i in label:
-        if i == 1:
-            prior_Pos = prior_Pos + 1
-        elif i == 2:
-            prior_Neg = prior_Neg + 1
-        else:
-            prior_Neutral = prior_Neutral + 1
-    prior_Pos = prior_Pos / float(numTrainDoc)
-    prior_Neg = prior_Neg / float(numTrainDoc)
-    prior_Neutral = prior_Neutral / float(numTrainDoc)
-    wordsInPosNum = np.ones(numWords)
-    wordsInNegNum = np.ones(numWords)
-    wordsInNeutralNum = np.ones(numWords)
-    PosWordsNum = 2.0  # 如果一个概率为0，乘积为0，故初始化1，分母2
-    NegWordsNum = 2.0
-    NeutralWordsNum = 2.0
-    for i in range(0, numTrainDoc):
-        try:
-            if label[i] == 1:
-                wordsInPosNum += train_mood_array[i]
-                PosWordsNum += sum(train_mood_array[i])  # 统计Pos中语料库中词汇出现的总次数
-            elif label[i] == 2:
-                wordsInNegNum += train_mood_array[i]
-                NegWordsNum += sum(train_mood_array[i])
-            else:
-                wordsInNeutralNum += train_mood_array[i]
-                NeutralWordsNum += sum(train_mood_array[i])
-        except Exception as e:
-            traceback.print_exc(e)
-    pWordsPosicity = np.log(wordsInPosNum / PosWordsNum)
-    pWordsNegy = np.log(wordsInNegNum / NegWordsNum)
-    pWordsNeutral = np.log(wordsInNeutralNum / NeutralWordsNum)
-    return pWordsPosicity, pWordsNegy, pWordsNeutral, prior_Pos, prior_Neg, prior_Neutral
-
-
-def classify(pWordsPosicity, pWordsNegy, pWordsNeutral, prior_Pos, prior_Neg, prior_Neutral,
-             test_word_arrayMarkedArray):
-    pP = sum(test_word_arrayMarkedArray * pWordsPosicity) + np.log(prior_Pos)
-    pN = sum(test_word_arrayMarkedArray * pWordsNegy) + np.log(prior_Neg)
-    pNeu = sum(test_word_arrayMarkedArray * pWordsNeutral) + np.log(prior_Neutral)
-
-    if pP > pN > pNeu or pP > pNeu > pN:
-        return pP, pN, pNeu, 1
-    elif pN > pP > pNeu or pN > pNeu > pP:
-        return pP, pN, pNeu, 2
-    else:
-        return pP, pN, pNeu, 3
-
-
-def predict(test_word_array, test_word_arrayLabel, testCount, PosWords, NegWords, NeutralWords, prior_Pos, prior_Neg,
-            prior_Neutral):
-    errorCount = 0
-    for j in range(testCount):
-        try:
-            pP, pN, pNeu, smsType = classify(PosWords, NegWords, NeutralWords, prior_Pos, prior_Neg, prior_Neutral,
-                                             test_word_array[j])
-            if smsType != test_word_arrayLabel[j]:
-                errorCount += 1
-        except Exception as e:
-            traceback.print_exc(e)
-    print("Bayes", errorCount / testCount)
-    return errorCount / testCount
-
-
-if __name__ == '__main__':
-    multi_nb = []
-    bayes_nb = []
-    for m in range(1, 51):
-        vocabList = build_key_word("train.txt")
-        line_cut, label = loadDataSet("train.txt")
-        train_mood_array = setOfWordsListToVecTor(vocabList, line_cut)
-        test_word_array = []
-        test_word_arrayLabel = []
-        testCount = 100  # 从中随机选取100条用来测试，并删除原来的位置
-        for i in range(testCount):
-            try:
-                randomIndex = int(random.uniform(0, len(train_mood_array)))
-                test_word_arrayLabel.append(label[randomIndex])
-                test_word_array.append(train_mood_array[randomIndex])
-                del (train_mood_array[randomIndex])
-                del (label[randomIndex])
-            except Exception as e:
-                print(e)
-
-        multi = MultinomialNB()
-        multi = multi.fit(train_mood_array, label)
-        joblib.dump(multi, 'model/gnb.model')
-        muljob = joblib.load('model/gnb.model')
-        result = muljob.predict(test_word_array)
-        count = 0
-        for i in range(len(test_word_array)):
-            type = result[i]
-            if type != test_word_arrayLabel[i]:
-                count = count + 1
-                # print(test_word_array[i], "----", result[i])
-        print("MultinomialNB", count / float(testCount))
-        multi_nb.append(count / float(testCount))
-        PosWords, NegWords, NeutralWords, prior_Pos, prior_Neg, prior_Neutral = \
-            trainingNaiveBayes(train_mood_array, label)
-        accuracy = predict(test_word_array, test_word_arrayLabel, testCount, PosWords, NegWords, NeutralWords,
-                           prior_Pos, prior_Neg,
-                           prior_Neutral)
-        bayes_nb.append(accuracy)
-
-    # 画图
-    mpl.rcParams['font.sans-serif'] = ['SimHei']
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.plot([x for x in range(1, 51)], multi_nb,
-            label='sklearn库',
-            color='orange')
-    ax.plot([x for x in range(1, 51)], bayes_nb,
-            label='实现',
-            color='green')
-    ax.set_xlabel('次数')
-    ax.set_ylabel('准确率')
-    plt.xlim([1, 50])
-    leg = ax.legend(loc='upper right', fancybox=True)
-    leg.get_frame().set_alpha(0.7)
-    plt.title("对比")
-    plt.show()
