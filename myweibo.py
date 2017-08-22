@@ -65,7 +65,6 @@ class AppClient:
         )
         res = session.post('https://api.weibo.com/oauth2/authorize', postdata)
         location = res.url
-        print(location)
         code = location.split('=')[1]
         conn.close()
         return code
