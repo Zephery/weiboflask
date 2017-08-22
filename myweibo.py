@@ -108,7 +108,8 @@ class AppClient:
             for i in range(0, length):
                 try:
                     data = s['statuses'][i]
-                    weibonlp = "http://127.0.0.1:5000/hello/" + urllib.parse.quote_plus(data['text'])
+                    #链接中带有链接，无法处理，强制去掉url中的“/“
+                    weibonlp = "http://127.0.0.1:5000/hello/" + urllib.parse.quote_plus(data['text'].replace("/", ""))
                     logging.info(weibonlp)
                     type = requests.get(weibonlp).content
                     self.insert(data['id'], data['user']['name'], data['user']['location'], data['user']['url'],
