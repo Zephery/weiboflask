@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, g, render_template, redirect, url_for
 import multi_NB as ada_real
 import sys
 import json
+from myweibo import WeiBoLogin
 
 app = Flask(__name__)
 
