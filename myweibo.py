@@ -37,7 +37,7 @@ class AppClient:
     def insert(self, user_id, name, location, url, text, created_at, type):
         try:
             ddd = time.mktime(time.strptime(created_at, "%a %b %d %H:%M:%S +0800 %Y"))
-            created_at = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(ddd))
+            created_at = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(ddd))
             if len(text) > 1000:
                 return
             insert_sql = """insert into myblog.weibo(uid,`name`,location,url,text,created_at,`type`) VALUES (%s,%s,%s,%s,%s,%s,%s)"""
