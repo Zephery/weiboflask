@@ -62,12 +62,35 @@ def testandscore(word):
     ggg = {}
     ccc = {}
     ddd = {}
+    print(len(str(bb[0])))
+    print("end")
+
+    a = float('%.5f' % bb[0])
+    b = float('%.5f' % bb[1])
+    c = float('%.5f' % bb[2])
+    max_value = str(max([a, b, c]))
+    min_value = str(min([a, b, c]))
+    same = ''
+    for i in range(0, len(min_value)):
+        if max_value[i] == min_value[i]:
+            same = same + min_value[i]
+        else:
+            break
+    print(same)
+    kkkk = pow(10, (len(same) - 2))
+    a = (a - float(same)) * kkkk
+    b = (b - float(same)) * kkkk
+    c = (c - float(same)) * kkkk
+    a = float('%.5f' % a)
+    b = float('%.5f' % b)
+    c = float('%.5f' % c)
+    print(a, b, c)
     ggg["key"] = "正向"
-    ggg["value"] = float('%.5f' % bb[0])
+    ggg["value"] = a
     ccc["key"] = "负向"
-    ccc["value"] = float('%.5f' % bb[1])
+    ccc["value"] = b
     ddd["key"] = "客观"
-    ddd["value"] = float('%.5f' % bb[2])
+    ddd["value"] = c
     temp.append(ggg)
     temp.append(ccc)
     temp.append(ddd)

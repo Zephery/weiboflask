@@ -13,7 +13,7 @@ import pymysql
 import urllib.parse
 from weibo import Client
 
-connection = pymysql.connect(host="123.206.28.24", user="root", passwd="helloroot", db="myblog", port=3306,
+connection = pymysql.connect(host="119.23.46.71", user="root", passwd="helloroot", db="myblog", port=3306,
                              charset="utf8")
 cur = connection.cursor()
 APP_KEY = '415390189'
@@ -30,7 +30,7 @@ class AppClient:
         self._appSecret = APP_SECRET  # your app secret
         self._callbackUrl = REDIRECT_URI  # your callback url
         self._account = 'w1570631036@sina.com'  # your weibo user name (eg.email)
-        self._password = 'wenzhihuai2017'  # your weibo pwd
+        self._password = 'wenzhihuai2018.'  # your weibo pwd
         self.AppCli = client
         self._author_url = self.AppCli.authorize_url
 
@@ -40,6 +40,8 @@ class AppClient:
             created_at = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(ddd))
             if len(text) > 1000:
                 return
+            text=pymysql.escape_string(text)
+            print(text)
             insert_sql = """insert into myblog.weibo(uid,`name`,location,url,text,created_at,`type`) VALUES (%s,%s,%s,%s,%s,%s,%s)"""
             cur.execute(insert_sql, (user_id, name, location, url, text, created_at, int(type)))
             connection.commit()
@@ -260,4 +262,4 @@ if __name__ == '__main__':
                         filemode='a')
 
     weibo = WeiBoLogin()
-    weibo.login("w1570631036@sina.com", "wenzhihuai2017")
+    weibo.login("w1570631036@sina.com", "wenzhihuai2018.")
